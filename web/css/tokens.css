@@ -1,0 +1,79 @@
+/* WaterSentinel design tokens: industrial deep blue, white, teal, restrained orange for alerts. */
+:root {
+  --navy-950: #061528;
+  --navy-900: #0a1f3a;
+  --navy-800: #102b4e;
+  --navy-700: #183a66;
+  --blue-600: #2563b0;
+  --blue-500: #3b7bd0;
+  --blue-100: #e3edf9;
+  --teal-600: #0e8f87;
+  --teal-500: #129c92;
+  --teal-300: #6fd3c9;
+  --teal-100: #e0f5f3;
+  --orange-600: #c95f17;
+  --orange-500: #e07a2e;
+  --orange-100: #fdf0e6;
+  --green-600: #2f8a4c;
+  --green-100: #e6f4ea;
+  --slate-900: #142033;
+  --slate-700: #3a4a60;
+  --slate-500: #66768c;
+  --slate-400: #8e9bae;
+  --slate-300: #c3ccd8;
+  --slate-200: #dde3eb;
+  --slate-100: #eef2f6;
+  --slate-50: #f6f8fb;
+
+  --surface: #ffffff;
+  --page: #f3f6f9;
+  --ink: var(--slate-900);
+  --ink-2: var(--slate-700);
+  --ink-3: var(--slate-500);
+  --line: var(--slate-200);
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(10, 31, 58, .06), 0 4px 16px rgba(10, 31, 58, .05);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--font); color: var(--ink); background: var(--page); line-height: 1.5; font-size: 15px; }
+a { color: var(--blue-600); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 2px; }
+.mono { font-family: var(--mono); font-feature-settings: 'tnum'; }
+.num { font-variant-numeric: tabular-nums; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Charts (shared) */
+.chart-wrap { position: relative; width: 100%; }
+.chart { display: block; overflow: visible; }
+.chart .grid { stroke: var(--slate-100); stroke-width: 1; }
+.chart .axis-base { stroke: var(--slate-300); stroke-width: 1; }
+.chart .tick { fill: var(--ink-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+.chart .tick.unit { fill: var(--ink-3); font-weight: 600; }
+.chart .crosshair { stroke: var(--slate-400); stroke-width: 1; stroke-dasharray: 3 3; }
+.band-anomaly { fill: var(--orange-500); opacity: .13; }
+.chart-tip { position: absolute; pointer-events: none; opacity: 0; transition: opacity .12s; min-width: 190px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); padding: 8px 10px; font-size: 12px; z-index: 5; }
+.tip-h { font-weight: 600; margin-bottom: 4px; color: var(--ink); }
+.tip-row { display: flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tip-row b { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+.tip-flag { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); color: var(--orange-600); font-weight: 600; }
+.sw { display: inline-block; width: 10px; height: 3px; border-radius: 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); margin: 0 0 8px; padding: 0; list-style: none; }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.legend .sw-dash { width: 14px; height: 0; border-top: 2px dashed var(--slate-400); }
+.legend .sw-band { width: 12px; height: 12px; border-radius: 3px; background: var(--orange-500); opacity: .25; }
+.bars { display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: minmax(110px, 200px) 1fr auto; gap: 12px; align-items: center; font-size: 13px; }
+.bar-label { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { height: 12px; background: var(--slate-100); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 0 4px 4px 0; }
+.bar-value { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 72px; text-align: right; }
+.bar-value span { color: var(--ink-3); font-weight: 400; font-size: 11px; }
+.bar-row:hover .bar-fill, .bar-row:focus .bar-fill { filter: brightness(1.1); }
+.spark { display: block; }

@@ -1,0 +1,264 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: WaterSentinel - ingestion, detection, Bedrock explanations, S3 reports, CloudWatch monitoring.
+
+Parameters:
+  Stage: { Type: String, Default: dev, AllowedValues: [dev, staging, prod] }
+  VpcId: { Type: AWS::EC2::VPC::Id }
+  PrivateSubnetIds: { Type: List<AWS::EC2::Subnet::Id> }
+  BedrockModelId:
+    Type: String
+    Description: Bedrock model or inference-profile ID enabled in this account/region.
+  HubSpotSecretArn:
+    Type: String
+    Description: Secrets Manager ARN holding the HubSpot private-app token (created out of band).
+  AlarmEmail: { Type: String }
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [arm64]
+    CodeUri: ../backend/
+    Timeout: 30
+    MemorySize: 512
+    Tracing: Active
+    LoggingConfig: { LogFormat: JSON }
+    Environment:
+      Variables:
+        STAGE: !Ref Stage
+        DB_CLUSTER_ARN: !GetAtt Database.DBClusterArn
+        DB_SECRET_ARN: !GetAtt Database.MasterUserSecret.SecretArn
+        DB_NAME: watersentinel
+
+Resources:
+  # ---------- Data ----------
+  DbSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: { DBSubnetGroupDescription: WaterSentinel, SubnetIds: !Ref PrivateSubnetIds }
+  DbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties: { GroupDescription: WaterSentinel Aurora (Data API only, no ingress), VpcId: !Ref VpcId }
+  Database:
+    Type: AWS::RDS::DBCluster
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: aurora-postgresql
+      EngineVersion: '16.4'
+      DatabaseName: watersentinel
+      MasterUsername: ws_admin
+      ManageMasterUserPassword: true
+      EnableHttpEndpoint: true
+      StorageEncrypted: true
+      BackupRetentionPeriod: 14
+      DeletionProtection: true
+      DBSubnetGroupName: !Ref DbSubnetGroup
+      VpcSecurityGroupIds: [!Ref DbSecurityGroup]
+      ServerlessV2ScalingConfiguration: { MinCapacity: 0.5, MaxCapacity: 8 }
+      EnableCloudwatchLogsExports: [postgresql]
+  DatabaseInstance:
+    Type: AWS::RDS::DBInstance
+    Properties: { DBClusterIdentifier: !Ref Database, DBInstanceClass: db.serverless, Engine: aurora-postgresql }
+
+  ReportsKey:
+    Type: AWS::KMS::Key
+    Properties: { EnableKeyRotation: true, Description: WaterSentinel reports and raw ingest }
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration: { Status: Enabled }
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: aws:kms, KMSMasterKeyID: !Ref ReportsKey }
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true }
+      LifecycleConfiguration:
+        Rules: [{ Id: expire-old-versions, Status: Enabled, NoncurrentVersionExpiration: { NoncurrentDays: 90 } }]
+  IngestBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: aws:kms, KMSMasterKeyID: !Ref ReportsKey }
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true }
+      LifecycleConfiguration:
+        Rules: [{ Id: expire-raw, Status: Enabled, ExpirationInDays: 30 }]
+
+  # ---------- Identity & API ----------
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub watersentinel-${Stage}
+      AdminCreateUserConfig: { AllowAdminCreateUserOnly: true }
+      MfaConfiguration: OPTIONAL
+      EnabledMfas: [SOFTWARE_TOKEN_MFA]
+      UsernameAttributes: [email]
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties: { UserPoolId: !Ref UserPool, GenerateSecret: false, ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH] }
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Stage
+      DefaultRouteSettings: { ThrottlingBurstLimit: 50, ThrottlingRateLimit: 20 }
+      Auth:
+        DefaultAuthorizer: Cognito
+        EnableIamAuthorizer: true  # AWS_IAM is used by integration connectors for ingestion
+        Authorizers:
+          Cognito:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+              audience: [!Ref UserPoolClient]
+
+  # ---------- Functions ----------
+  IngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: watersentinel.handlers.ingest.handler
+      Policies:
+        - Statement:
+            - { Effect: Allow, Action: [rds-data:ExecuteStatement, rds-data:BatchExecuteStatement], Resource: !GetAtt Database.DBClusterArn }
+            - { Effect: Allow, Action: secretsmanager:GetSecretValue, Resource: !GetAtt Database.MasterUserSecret.SecretArn }
+        - S3ReadPolicy: { BucketName: !Ref IngestBucket }
+        - KMSDecryptPolicy: { KeyId: !Ref ReportsKey }
+      Events:
+        Api: { Type: HttpApi, Properties: { ApiId: !Ref Api, Path: /v1/readings, Method: POST, Auth: { Authorizer: AWS_IAM } } }
+        FileDrop:
+          Type: S3
+          Properties: { Bucket: !Ref IngestBucket, Events: s3:ObjectCreated:*, Filter: { S3Key: { Rules: [{ Name: prefix, Value: ingest/ }, { Name: suffix, Value: .csv }] } } }
+
+  AnalyzeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: watersentinel.handlers.analyze.handler
+      Timeout: 300
+      MemorySize: 1024
+      ReservedConcurrentExecutions: 1
+      Policies:
+        - Statement:
+            - { Effect: Allow, Action: [rds-data:ExecuteStatement, rds-data:BatchExecuteStatement], Resource: !GetAtt Database.DBClusterArn }
+            - { Effect: Allow, Action: secretsmanager:GetSecretValue, Resource: !GetAtt Database.MasterUserSecret.SecretArn }
+      Events:
+        Hourly: { Type: ScheduleV2, Properties: { ScheduleExpression: cron(10 * * * ? *), RetryPolicy: { MaximumRetryAttempts: 1 } } }
+
+  ExplainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: watersentinel.handlers.explain.handler
+      Timeout: 60
+      Environment: { Variables: { BEDROCK_MODEL_ID: !Ref BedrockModelId } }
+      Policies:
+        - Statement:
+            - { Effect: Allow, Action: [rds-data:ExecuteStatement], Resource: !GetAtt Database.DBClusterArn }
+            - { Effect: Allow, Action: secretsmanager:GetSecretValue, Resource: !GetAtt Database.MasterUserSecret.SecretArn }
+            - { Effect: Allow, Action: [bedrock:InvokeModel, bedrock:Converse], Resource: '*' }
+      Events:
+        Api: { Type: HttpApi, Properties: { ApiId: !Ref Api, Path: '/v1/anomalies/{eventId}/brief', Method: POST } }
+
+  ReportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: watersentinel.handlers.report.handler
+      Timeout: 120
+      Environment: { Variables: { REPORTS_BUCKET: !Ref ReportsBucket } }
+      Policies:
+        - Statement:
+            - { Effect: Allow, Action: [rds-data:ExecuteStatement], Resource: !GetAtt Database.DBClusterArn }
+            - { Effect: Allow, Action: secretsmanager:GetSecretValue, Resource: !GetAtt Database.MasterUserSecret.SecretArn }
+        - S3CrudPolicy: { BucketName: !Ref ReportsBucket }
+        - KMSEncryptPolicy: { KeyId: !Ref ReportsKey }
+        - KMSDecryptPolicy: { KeyId: !Ref ReportsKey }
+      Events:
+        Api: { Type: HttpApi, Properties: { ApiId: !Ref Api, Path: /v1/reports, Method: POST } }
+
+  DemoRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: watersentinel.handlers.demo_request.handler
+      Environment: { Variables: { HUBSPOT_SECRET_ARN: !Ref HubSpotSecretArn } }
+      Policies:
+        - Statement:
+            - { Effect: Allow, Action: secretsmanager:GetSecretValue, Resource: !Ref HubSpotSecretArn }
+      Events:
+        Api: { Type: HttpApi, Properties: { ApiId: !Ref Api, Path: /public/demo-requests, Method: POST, Auth: { Authorizer: NONE } } }
+
+  # ---------- Monitoring ----------
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties: { Subscription: [{ Protocol: email, Endpoint: !Ref AlarmEmail }] }
+
+  AnalyzeErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Hourly analysis run failed
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions: [{ Name: FunctionName, Value: !Ref AnalyzeFunction }]
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+  AnalysisStaleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: No meters analysed for 2 hours (scheduler or database problem)
+      Namespace: WaterSentinel
+      MetricName: MetersAnalyzed
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlarmTopic]
+  IngestRejectsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Unusual volume of rejected or unauthorized readings
+      Metrics:
+        - Id: rejected
+          MetricStat: { Metric: { Namespace: WaterSentinel, MetricName: ReadingsRejectedUnauthorized }, Period: 900, Stat: Sum }
+      EvaluationPeriods: 1
+      Threshold: 100
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+  BriefFallbackAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Bedrock briefs falling back to rule-based output
+      Namespace: WaterSentinel
+      MetricName: BriefsFallback
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+  OpsDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub watersentinel-${Stage}
+      DashboardBody: !Sub |
+        {"widgets":[
+          {"type":"metric","width":12,"height":6,"properties":{"title":"Ingestion","region":"${AWS::Region}","stat":"Sum","period":3600,
+            "metrics":[["WaterSentinel","ReadingsAccepted"],[".","ReadingsRejected"],[".","ReadingsRejectedUnauthorized"]]}},
+          {"type":"metric","width":12,"height":6,"properties":{"title":"Detection","region":"${AWS::Region}","stat":"Sum","period":3600,
+            "metrics":[["WaterSentinel","MetersAnalyzed"],[".","AnomalyEventsInWindow"],[".","AnalysisErrors"]]}},
+          {"type":"metric","width":12,"height":6,"properties":{"title":"Assistant briefs","region":"${AWS::Region}","stat":"Sum","period":3600,
+            "metrics":[["WaterSentinel","BriefsGenerated","Source","bedrock"],[".","BriefsRejected"],[".","BriefsFallback"]]}},
+          {"type":"metric","width":12,"height":6,"properties":{"title":"Lambda errors","region":"${AWS::Region}","stat":"Sum","period":300,
+            "metrics":[["AWS/Lambda","Errors","FunctionName","${IngestFunction}"],["...","${AnalyzeFunction}"],["...","${ExplainFunction}"],["...","${ReportFunction}"]]}}
+        ]}
+
+Outputs:
+  ApiUrl: { Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}' }
+  ReportsBucketName: { Value: !Ref ReportsBucket }
+  IngestBucketName: { Value: !Ref IngestBucket }
+  UserPoolId: { Value: !Ref UserPool }

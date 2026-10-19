@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WaterSentinel · Water Consumption Intelligence</title>
+  <meta name="description" content="WaterSentinel detects unusual water consumption across your sites, explains the evidence, and turns it into inspection work your maintenance team can act on.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/site.css">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header class="site-nav">
+    <div class="wrap">
+      <a class="logo" href="#top" aria-label="WaterSentinel home">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c5 6.5 9 11.2 9 16a9 9 0 0 1-18 0c0-4.8 4-9.5 9-16z" fill="#129c92"/><path d="M9.5 20.5h3l2-4 3 7 2-3h3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        WaterSentinel
+      </a>
+      <nav aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#demo">See it detect</a>
+        <a href="#use-cases">Use cases</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="cta">
+        <a class="btn btn-outline" href="app.html">Open demo console</a>
+        <a class="btn btn-primary" href="#contact">Request a demo</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <p class="eyebrow" style="color:var(--teal-300)">Water consumption intelligence</p>
+          <h1>Spot unusual water use early. <em>Investigate with evidence.</em></h1>
+          <p class="lede">WaterSentinel watches meter readings across every site, flags consumption that breaks from its normal pattern, explains what the data shows, and turns it into inspection work your maintenance team can close out.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#contact">Request a demo</a>
+            <a class="btn btn-outline" href="app.html">Explore the sample console →</a>
+          </div>
+          <div class="fine"><span>Works with interval meter data</span><span>Evidence-first AI briefs</span><span>Inspection workflow built in</span></div>
+        </div>
+
+        <div class="mock" aria-label="Sample monitoring dashboard with fictional data">
+          <div class="mock-bar"><span class="dots"><i></i><i></i><i></i></span>Lakeview Residences · Main incoming supply<span class="sample">SAMPLE DATA</span></div>
+          <div class="mock-body">
+            <div class="mock-kpis">
+              <div class="mock-kpi"><div class="k">Current flow</div><div class="v" id="h-flow">–</div></div>
+              <div class="mock-kpi"><div class="k">Expected</div><div class="v" id="h-exp">–</div></div>
+              <div class="mock-kpi"><div class="k">Night minimum</div><div class="v" id="h-mnf">–</div></div>
+            </div>
+            <div class="mock-chart">
+              <div class="h">Hourly flow vs expected <span class="live" id="h-time">Replaying</span></div>
+              <div class="chart-wrap" id="hero-chart"></div>
+            </div>
+            <div class="mock-alert hide" id="h-alert" role="status">
+</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="strip"><div class="wrap"><span>Built for teams who run</span><span>Hospitals</span><span>Office campuses</span><span>Logistics sites</span><span>Residential portfolios</span><span>Utility service areas</span></div></div>
+
+    <section id="how">
+      <div class="wrap">
+        <p class="eyebrow">How it works</p>
+        <h2 class="section-title">From meter reading to closed-out inspection, with the evidence at every step.</h2>
+        <div class="steps">
+          <div class="step"><div class="n">01 · INGEST</div><h3>Connect authorized meters</h3><p>Interval readings arrive through approved utility, AMI or BMS integrations, or scheduled file drops. Each source is validated and quality-checked on arrival.</p></div>
+          <div class="step"><div class="n">02 · DETECT</div><h3>Flag what breaks pattern</h3><p>A statistical detector compares every hour with that meter's own hour-of-day and hour-of-week history. Thresholds are yours to tune.</p></div>
+          <div class="step"><div class="n">03 · EXPLAIN</div><h3>Brief the people who go look</h3><p>The investigation assistant summarises timing, magnitude and night-flow evidence, lists plausible explanations and suggests an inspection sequence.</p></div>
+          <div class="step"><div class="n">04 · VERIFY</div><h3>Inspect, record, learn</h3><p>Anomalies become assigned inspection tasks. The outcome — verified leak, no leak found, or operational cause — is recorded against the event.</p></div>
+        </div>
+        <div class="truth">
+          <div><h3>A detected anomaly is…</h3><p>consumption that differs significantly from what the meter's history predicts. It is a reason to look, ranked by how much it matters.</p></div>
+          <div><h3>A verified leak is…</h3><p>a physical leak located by someone on site. WaterSentinel never labels an event a leak from consumption data alone.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="demo" id="demo">
+      <div class="wrap">
+        <p class="eyebrow">See it detect</p>
+        <h2 class="section-title">Eight weeks of fictional readings. One unusual pattern. Move the threshold and watch the detector respond.</h2>
+        <p class="lede">These readings are simulated for a fictional residential building. The detector and assistant below are the same code that runs in the sample console.</p>
+        <div class="demo-grid">
+          <div class="panel">
+            <h3>Lakeview Residences · main meter, last 14 days</h3>
+            <p class="hint">Observed hourly flow (blue) against the expected pattern (dashed). Shaded hours exceed both baselines.</p>
+            <div class="chart-wrap" id="demo-chart"></div>
+            <label class="thresh"><span>z-score threshold</span><input type="range" id="z" min="2" max="12" step="0.5" value="3.5"><output id="z-out">3.5</output></label>
+            <div class="det-stats">
+              <div><div class="k">Flagged hours</div><div class="v" id="d-hours">–</div></div>
+              <div><div class="k">Events</div><div class="v" id="d-events">–</div></div>
+              <div><div class="k">Excess volume</div><div class="v" id="d-excess">–</div></div>
+            </div>
+          </div>
+          <div class="panel brief-sample" id="demo-brief" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="platform">
+      <div class="wrap">
+        <p class="eyebrow">Platform</p>
+        <h2 class="section-title">Six capabilities, one evidence trail.</h2>
+        <div class="features">
+          <div class="feature"><div class="ic"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 15l4-5 3 3 4-7 5 6"/></svg></div><h3>Consumption anomaly detection</h3><p>Robust statistics on hourly readings, with configurable thresholds, minimum excess and event grouping per portfolio.</p></div>
+          <div class="feature"><div class="ic"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5L18 18"/></svg></div><h3>Leak investigation assistant</h3><p>Plain-language briefs grounded in the detector's numbers, with possible explanations and how to check each one.</p></div>
+          <div class="feature"><div class="ic"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17V9M8 17V4M13 17v-6M18 17V7"/></svg></div><h3>Site comparison</h3><p>Compare sites per occupant, per square metre or in total, with the context on file shown beside every figure.</p></div>
+          <div class="feature"><div class="ic"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h12M4 10h8M4 16h4"/></svg></div><h3>Alert prioritization</h3><p>Rank by magnitude, duration, recurrence, site criticality and whether it is still happening. Weights are adjustable.</p></div>
+          <div class="feature"><div class="ic"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10l2 2 4-4"/></svg></div><h3>Maintenance workflow</h3><p>Turn reviewed anomalies into assigned inspection tasks and record what was found, so the history stays honest.</p></div>
+          <div class="feature"><div class="ic"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 2h7l4 4v12H5z"/><path d="M12 2v4h4"/></svg></div><h3>Reporting</h3><p>Consumption summaries, anomaly histories and investigation reports, exported for owners, auditors and contractors.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="usecases" id="use-cases">
+      <div class="wrap">
+        <p class="eyebrow" style="color:var(--teal-300)">Use cases</p>
+        <h2 class="section-title">Made for the people who get the call when water goes somewhere it shouldn't.</h2>
+        <div class="uc-grid">
+          <div class="uc"><h3>Facility managers</h3><div class="who">Hospitals, campuses, logistics sites</div>
+            <ul><li>One queue of ranked anomalies across every meter</li><li>Night-flow evidence before you send anyone out</li><li>Inspection tasks with outcomes on record</li></ul>
+            <blockquote>“Which building do I walk first tonight, and what am I looking for?”</blockquote></div>
+          <div class="uc"><h3>Property groups</h3><div class="who">Multifamily and commercial portfolios</div>
+            <ul><li>Portfolio intensity per occupant and per m²</li><li>Consistent response standard across managers</li><li>Reports for owners and insurers</li></ul>
+            <blockquote>“Show me which assets are drifting before the bill does.”</blockquote></div>
+          <div class="uc"><h3>Utilities &amp; water retailers</h3><div class="who">Commercial customer programmes</div>
+            <ul><li>Offer high-use notifications to business customers</li><li>Evidence packs that support customer conversations</li><li>Integration through authorized AMI data feeds</li></ul>
+            <blockquote>“Help our largest customers find unusual use without over-promising.”</blockquote></div>
+          <div class="uc"><h3>Service operators</h3><div class="who">FM contractors and plumbing partners</div>
+            <ul><li>Receive scoped inspection tasks with evidence</li><li>Record findings that feed back to the client</li><li>Prioritise call-outs across client sites</li></ul>
+            <blockquote>“Send my technicians to the right riser with the right tools.”</blockquote></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing">
+      <div class="wrap">
+        <p class="eyebrow">Pricing</p>
+        <h2 class="section-title">Priced per monitored meter. Every plan includes detection and the inspection workflow.</h2>
+        <div class="price-grid">
+          <div class="plan"><h3>Essentials</h3><div class="for">For a single site getting started</div>
+            <div class="price">$18<small> / meter / month</small></div>
+            <ul><li>Up to 15 meters</li><li>Hourly anomaly detection</li><li>Alert prioritization</li><li>Inspection tasks &amp; outcomes</li><li>CSV and printable reports</li></ul>
+            <a class="btn btn-dark" href="#contact" data-plan="Essentials">Talk to us</a></div>
+          <div class="plan featured"><h3>Professional</h3><div class="for">For multi-site facility teams</div>
+            <div class="price">$32<small> / meter / month</small></div>
+            <ul><li>Unlimited sites, up to 250 meters</li><li>Investigation assistant briefs</li><li>Site comparison &amp; benchmarking</li><li>Configurable detector and weights</li><li>CRM and work-order integrations</li></ul>
+            <a class="btn btn-primary" href="#contact" data-plan="Professional">Request a demo</a></div>
+          <div class="plan"><h3>Enterprise</h3><div class="for">For portfolios, utilities and operators</div>
+            <div class="price">Custom</div>
+            <ul><li>Volume pricing above 250 meters</li><li>Authorized AMI / utility data feeds</li><li>Dedicated AWS region and SSO</li><li>Custom retention and audit exports</li><li>Onboarding and integration support</li></ul>
+            <a class="btn btn-dark" href="#contact" data-plan="Enterprise">Contact sales</a></div>
+        </div>
+        <p class="price-note">Prices in USD, billed annually. Meter integrations are scoped per deployment and require authorization from the meter owner or utility.</p>
+      </div>
+    </section>
+
+    <section id="faq" style="padding-top:0">
+      <div class="wrap">
+        <p class="eyebrow">FAQ</p>
+        <h2 class="section-title">Straight answers.</h2>
+        <div class="faq">
+          <details><summary>Does WaterSentinel confirm leaks?</summary><p>No. It detects consumption that is statistically unusual for that meter and helps you decide where to look. A leak is recorded as verified only after an on-site inspection finds one.</p></details>
+          <details><summary>What data do you need?</summary><p>Interval readings (hourly or finer) from each meter you want monitored, plus basic site context such as floor area and occupancy for comparisons.</p></details>
+          <details><summary>Which meters can connect?</summary><p>We integrate through data sources you are authorized to share: utility or AMI data portals, building management systems, data loggers, or scheduled file exports. Each integration is scoped during onboarding.</p></details>
+          <details><summary>How does the AI assistant work?</summary><p>It receives a structured evidence package computed by the detector and writes a brief from those numbers only. Output is checked so it never claims a leak is confirmed.</p></details>
+          <details><summary>Is our data used to train AI models?</summary><p>No. Briefs are generated with Amazon Bedrock, which does not use customer prompts or outputs to train foundation models. Your data stays in your deployment's AWS region.</p></details>
+          <details><summary>Is the console demo live?</summary><p>The sample console uses fictional sites and simulated readings so you can explore every feature. It is not connected to real meters.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="wrap">
+        <div>
+          <p class="eyebrow">Request a demo</p>
+          <h2 class="section-title">See WaterSentinel on your own consumption patterns.</h2>
+          <p class="lede">Tell us about your sites. We'll walk through the console, then discuss which of your meters could be connected and how.</p>
+          <ul class="points">
+            <li>30-minute walkthrough with a water-operations specialist</li>
+            <li>Review of the meter data you already have access to</li>
+            <li>An honest view of what detection can and cannot tell you</li>
+          </ul>
+        </div>
+        <form class="demo-form" id="demo-form" novalidate>
+          <label class="f">Full name<input name="name" autocomplete="name" required><span class="err"></span></label>
+          <label class="f">Work email<input name="email" type="email" autocomplete="email" required><span class="err"></span></label>
+          <label class="f">Organisation<input name="company" autocomplete="organization" required><span class="err"></span></label>
+          <label class="f">I am a…<select name="persona" required>
+            <option value="">Select one</option>
+            <option value="facility_manager">Facility manager</option>
+            <option value="property_group">Property group / asset manager</option>
+            <option value="utility">Utility or water retailer</option>
+            <option value="service_operator">Service operator / FM contractor</option>
+            <option value="other">Other</option>
+          </select><span class="err"></span></label>
+          <label class="f">Number of sites<select name="sites"><option>1</option><option>2–5</option><option>6–20</option><option>21–100</option><option>100+</option></select></label>
+          <label class="f">Approx. meters<select name="meters"><option>Under 15</option><option>15–50</option><option>51–250</option><option>250+</option></select></label>
+          <label class="f full">Plan of interest<select name="plan"><option value="">Not sure yet</option><option>Essentials</option><option>Professional</option><option>Enterprise</option></select></label>
+          <label class="f full">What would you like to solve?<textarea name="message" placeholder="e.g. Unexplained night flow at two buildings; want one view across 12 sites."></textarea></label>
+          <label class="consent"><input type="checkbox" name="consent" required> <span>I agree that WaterSentinel may contact me about this request. See our privacy notice.</span></label>
+          <div class="form-foot"><button class="btn btn-primary" type="submit">Request demo</button><small id="form-status">We reply within one business day.</small></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div><a class="logo" href="#top" style="display:flex"><svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c5 6.5 9 11.2 9 16a9 9 0 0 1-18 0c0-4.8 4-9.5 9-16z" fill="#129c92"/></svg>WaterSentinel</a><p style="max-width:320px">Water consumption monitoring and anomaly detection for facility teams.</p></div>
+      <div><h4>Product</h4><a href="#how">How it works</a><a href="#platform">Platform</a><a href="#pricing">Pricing</a><a href="app.html">Sample console</a></div>
+      <div><h4>Solutions</h4><a href="#use-cases">Facility managers</a><a href="#use-cases">Property groups</a><a href="#use-cases">Utilities</a><a href="#use-cases">Service operators</a></div>
+      <div><h4>Company</h4><a href="#contact">Contact</a><a href="#faq">FAQ</a><a href="#contact">Privacy notice</a></div>
+      <div class="legal">© 2026 WaterSentinel. Sample dashboards on this site use fictional sites and simulated readings. Detected anomalies indicate unusual consumption and are not confirmation of a leak.</div>
+    </div>
+  </footer>
+  <script type="module" src="js/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WaterSentinel Console</title>
+  <meta name="description" content="WaterSentinel facility water monitoring console (demo with fictional data).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div class="app">
+    <aside class="side" id="side">
+      <a class="brand" href="index.html" aria-label="WaterSentinel home">
+        <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3c5 6.5 9 11.2 9 16a9 9 0 0 1-18 0c0-4.8 4-9.5 9-16z" fill="#129c92"/><path d="M9.5 20.5h3l2-4 3 7 2-3h3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        WaterSentinel
+      </a>
+      <nav class="nav" id="nav" aria-label="Console">
+        <div class="nav-label">Monitor</div>
+        <a href="#/overview" data-route="overview">Overview</a>
+        <a href="#/consumption" data-route="consumption">Consumption</a>
+        <a href="#/meters" data-route="meters">Meter register</a>
+        <a href="#/compare" data-route="compare">Site comparison</a>
+        <div class="nav-label">Respond</div>
+        <a href="#/alerts" data-route="alerts">Anomaly alerts <span class="count" id="alert-count" hidden></span></a>
+        <a href="#/investigate" data-route="investigate">Investigations</a>
+        <a href="#/tasks" data-route="tasks">Maintenance tasks</a>
+        <div class="nav-label">Share</div>
+        <a href="#/reports" data-route="reports">Reports</a>
+      </nav>
+      <div class="side-foot">
+        Signed in as <b>Demo facility manager</b><br>
+        <a href="#" id="reset-demo">Reset demo data</a> · <a href="index.html">Website</a>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="demo-banner" role="note">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span id="demo-notice"></span>
+      </div>
+      <header class="topbar">
+        <button class="btn menu-btn" id="menu-btn" aria-label="Open navigation">☰</button>
+        <div>
+          <h1 id="page-title">Overview</h1>
+          <div class="sub" id="page-sub"></div>
+        </div>
+        <div class="spacer"></div>
+        <div class="btn-row" id="page-actions"></div>
+      </header>
+      <main class="content" id="content" tabindex="-1"></main>
+    </div>
+  </div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

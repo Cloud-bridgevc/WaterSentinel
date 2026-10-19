@@ -1,0 +1,11 @@
+{
+  "name": "watersentinel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "WaterSentinel: water consumption monitoring and anomaly detection platform (demo build).",
+  "scripts": {
+    "start": "python3 -m http.server 8080 --directory web",
+    "test": "node --test tests/*.test.js && python3 -m unittest discover -s backend/tests -t backend"
+  }
+}
