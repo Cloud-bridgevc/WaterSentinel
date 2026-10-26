@@ -4,6 +4,8 @@ Water consumption monitoring and anomaly detection for facility teams: detect un
 
 > **Demo build.** All sites, meters and readings are fictional and simulated. No live meters are connected. A *detected anomaly* means consumption differed significantly from the expected pattern; a *verified leak* is recorded only after an on-site inspection finds one.
 
+**Live demo:** [website](https://cloud-bridgevc.github.io/WaterSentinel/) · [console](https://cloud-bridgevc.github.io/WaterSentinel/app.html) (deployed from `web/` by GitHub Pages)
+
 ## Run it
 
 ```bash
