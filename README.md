@@ -66,7 +66,7 @@ The investigations/tasks CRUD API is not implemented yet. The schema supports it
 
 - Home page (`web/index.html`): problem section with three sourced statistics, what-we-solve, comparison table, AI section, roadmap and team, with scroll-reveal motion that respects reduced motion (`web/css/glow.css`, `glow.js`).
 - New pages: `/privacy`, `/terms` (review drafts); the footer's privacy link now points to the notice. Footer credits the founders.
-- Ship assets: OG image, icons, manifest, sitemap, `_headers`, Vercel security headers, founders JSON-LD.
+- Ship assets: OG image, icons, manifest, sitemap, Vercel security headers, founders JSON-LD.
 
 ### Content to confirm before launch
 - **Founders:** Alade Alabi (Founder/CEO, confirmed) and Zainab Abubakar (Co-founder/CTO, still a placeholder) — edit in `web/index.html` (team section, footer) and the JSON-LD.
