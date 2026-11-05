@@ -69,7 +69,7 @@ The investigations/tasks CRUD API is not implemented yet. The schema supports it
 - Ship assets: OG image, icons, manifest, sitemap, `_headers`, Vercel security headers, founders JSON-LD.
 
 ### Content to confirm before launch
-- **Founders are placeholders:** Ifeanyi Ude (Founder/CEO) and Zainab Abubakar (Co-founder/CTO) — replace in `web/index.html` (team section, footer) and the JSON-LD.
+- **Founders:** Alade Alabi (Founder/CEO, confirmed) and Zainab Abubakar (Co-founder/CTO, still a placeholder) — edit in `web/index.html` (team section, footer) and the JSON-LD.
 - Contact email `hello@watersentinel.site` is a placeholder — create the forward or replace it.
 - Statistics (US EPA WaterSense) — re-check figures and links.
 - Privacy notice and terms need operator details and governing law.
